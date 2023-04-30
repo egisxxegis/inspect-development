@@ -20,3 +20,8 @@ def sleepy(ms: int = Query(), id: str = Query()):
 @router.get("/zzz/async")
 async def sleepy_async(ms: int = Query(), id: str = Query()):
     return await asyncio.to_thread(sleepy, ms, id)
+
+
+@router.get("/zzz/async/fake")
+async def sleepy_fake_async(ms: int = Query(), id: str = Query()):
+    return sleepy(ms, id)
