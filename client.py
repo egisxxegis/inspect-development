@@ -3,10 +3,21 @@ from urllib import parse
 import multiprocessing as mp
 from datetime import datetime, timedelta
 from time import sleep
+from enum import Enum
 
 import requests
 
 BASE_URL = "http://localhost:8099/"
+
+
+class Paths(str, Enum):
+    SLEEPY = "sleepy/zzz"
+    SLEEPY_ASYNCIO_TO_THREAD = "sleepy/zzz/async"
+    SLEEPY_FAKE_ASYNC = "sleepy/zzz/async/fake"
+
+
+def __prepare_main_process():
+    mp.set_start_method("spawn")
 
 
 def __sleep_till_start(start_datetime_str: str, step_ms=0.04):
@@ -29,7 +40,9 @@ def __request_sleepy(
     queue.put(id)
 
 
-def count_threads(sleep_seconds=5, time_shield_seconds=2, max_threads=100):
+def count_threads(
+    sleep_seconds=5, time_shield_seconds=2, max_threads=100, url_path=Paths.SLEEPY
+):
     """counts how many threaded tasks gets completed in backend.
     :param sleep_seconds: how many seconds shall the backend thread sleep
     :param time_shield_seconds: how many seconds to wait after first thread sleep-time
@@ -37,14 +50,13 @@ def count_threads(sleep_seconds=5, time_shield_seconds=2, max_threads=100):
     :return: count of threads that got executed in time"""
 
     # prepare
-    url = parse.urljoin(BASE_URL + "/", "sleepy/zzz")
+    url = parse.urljoin(BASE_URL + "/", url_path)
     # using asyncio.to_thread reduces number of threads by 2
     # url = parse.urljoin(BASE_URL + "/", "sleepy/zzz/async")
     time_start = datetime.now() + timedelta(seconds=time_shield_seconds)
     time_start_str = time_start.isoformat()
 
     # create processes
-    mp.set_start_method("spawn")
     queue = mp.Queue()
     processes = [
         mp.Process(
@@ -75,5 +87,31 @@ def count_threads(sleep_seconds=5, time_shield_seconds=2, max_threads=100):
 
 
 if __name__ == "__main__":
-    threads_cnt = count_threads(sleep_seconds=5, time_shield_seconds=4, max_threads=100)
-    print(f"number of threads that executed our requests: {threads_cnt}")
+    __prepare_main_process()
+    # sync
+    threads_cnt = count_threads(
+        sleep_seconds=5, time_shield_seconds=4, max_threads=100, url_path=Paths.SLEEPY
+    )
+    print(f"number of threads that executed our requests: {threads_cnt}. method: sync")
+
+    # asyncio.to_thread
+    threads_cnt = count_threads(
+        sleep_seconds=5,
+        time_shield_seconds=4,
+        max_threads=100,
+        url_path=Paths.SLEEPY_ASYNCIO_TO_THREAD,
+    )
+    print(
+        f"number of threads that executed our requests: {threads_cnt}. method: asyncio.to_thread"
+    )
+
+    # async fake
+    threads_cnt = count_threads(
+        sleep_seconds=5,
+        time_shield_seconds=4,
+        max_threads=100,
+        url_path=Paths.SLEEPY_FAKE_ASYNC,
+    )
+    print(
+        f"number of threads that executed our requests: {threads_cnt}. method: run sync in async"
+    )
