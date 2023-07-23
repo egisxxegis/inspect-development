@@ -86,7 +86,7 @@ def count_threads(
     return answered_threads_cnt
 
 
-if __name__ == "__main__":
+def _count_threads():
     __prepare_main_process()
     # sync
     threads_cnt = count_threads(
@@ -115,3 +115,7 @@ if __name__ == "__main__":
     print(
         f"number of threads that executed our requests: {threads_cnt}. method: run sync in async"
     )
+
+
+if __name__ == "__main__":
+    _count_threads()
