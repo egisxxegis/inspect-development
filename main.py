@@ -2,6 +2,7 @@ import uvicorn
 from fastapi import FastAPI, APIRouter
 
 from sample_router import router
+from db_router import router as db_router
 
 # import models
 # from database import engine
@@ -16,6 +17,7 @@ root_router = APIRouter()
 def include_routers(the_app: FastAPI) -> None:
     the_app.include_router(root_router)
     the_app.include_router(router)
+    the_app.include_router(db_router)
 
 
 def set_settings(the_app: FastAPI) -> None:
