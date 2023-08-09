@@ -7,6 +7,7 @@ from sqlalchemy import func
 
 from database import get_db, Base, engine
 import models
+import platform_consts as Const
 
 
 router = APIRouter(prefix="/db", tags=["db", "database"])
@@ -80,9 +81,9 @@ def query_status(db: Session = Depends(get_db)):
 
 
 @router.get("/query/sleep/postgres")
-def query_sleep_postgres(db: Session = Depends(get_db), id: int = Query()):
+def query_sleep_postgres(db: Session = Depends(get_db), id: str = Query()):
     try:
-        q = db.query(func.now(), func.pg_sleep(10)).all()
+        q = db.query(func.now(), func.pg_sleep(Const.SQL_SLEEP_SECONDS)).all()
     except Exception as ex:
         if "no such function" in str(ex).lower():
             raise HTTPException(
@@ -90,6 +91,4 @@ def query_sleep_postgres(db: Session = Depends(get_db), id: int = Query()):
             )
         else:
             raise ex
-    print(q)
-    print(q[0])
     return id
