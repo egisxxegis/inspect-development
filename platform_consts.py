@@ -26,6 +26,9 @@ DATABASE_POOL_OVERFLOW_SIZE = int(_os.environ["DATABASE_POOL_OVERFLOW_SIZE"].str
 DATABASE_POOL_TIMEOUT = int(_os.environ["DATABASE_POOL_TIMEOUT_IN_S"].strip())
 """How much seconds to wait when no connection to DB can be retrieved / opened?"""
 
+SQL_SLEEP_SECONDS = 10
+"""How long to sleep in query if SQL server supports it?"""
+
 LOGGING_LEVEL = "INFO"
 """What is the level of logging"""
 
