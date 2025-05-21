@@ -31,24 +31,6 @@ async def read_root():
     return {"Hello_from": "backend"}
 
 
-@root_router.get("/async_blocking_sleep")
-async def sleeper_bad_async(seconds: float = 0.01):
-    time.sleep(seconds)
-    return {"slept": seconds}
-
-
-@root_router.get("/sync_sleep")
-def sleeper_sync(seconds: float = 0.01):
-    time.sleep(seconds)
-    return {"slept": seconds}
-
-
-@root_router.get("/sync_sleep")
-async def sleeper_async(seconds: float = 0.01):
-    await asyncio.sleep(seconds)
-    return {"slept": seconds}
-
-
 if __name__ == "__main__":
     # models.Base.metadata.create_all(bind=engine)
 
