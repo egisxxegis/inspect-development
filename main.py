@@ -1,4 +1,6 @@
 import asyncio
+import json
+from fastapi.responses import StreamingResponse
 import requests
 import uvicorn
 from fastapi import Body, FastAPI, APIRouter, Query
@@ -45,6 +47,31 @@ def proxy(
     r = requests.request(method, full_url, data=body, headers=headers)
     print(f"got {r.status_code} {r.text}")
     return r.json()
+
+
+@root_router.post("/pulsing_proxy")
+async def pulsing_proxy(
+    full_url: str = Query(),
+    body: None | str = Body(default=None),
+    headers: None | dict = None,
+    method: str = "GET",
+):
+    future = asyncio.to_thread(
+        proxy, full_url=full_url, body=body, headers=headers, method=method
+    )
+
+    async def noise():
+        task = asyncio.create_task(future)
+        yield '{\n"noise": "'
+        while not task.done():
+            yield "."
+            await asyncio.sleep(0.1)
+
+        yield '",\n"data": '
+        yield json.dumps(task.result())
+        yield "\n}"
+
+    return StreamingResponse(noise(), media_type="json")
 
 
 if __name__ == "__main__":
